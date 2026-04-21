@@ -5,6 +5,7 @@ import { exec } from 'child_process'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/nexus/',
   plugins: [
     react(),
     {
