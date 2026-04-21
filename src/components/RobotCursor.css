@@ -1,0 +1,52 @@
+.robot-cursor-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.simple-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
+  margin-left: -15px;
+  border: 1px solid var(--neon-blue);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+  transition: border-color 0.3s ease;
+}
+
+.crosshair-v, .crosshair-h {
+  position: absolute;
+  background: var(--neon-blue);
+}
+
+.crosshair-v {
+  width: 1px;
+  height: 8px;
+  opacity: 0.8;
+}
+
+.crosshair-h {
+  width: 8px;
+  height: 1px;
+  opacity: 0.8;
+}
+
+/* Hide default cursor globally */
+html, body {
+  cursor: none !important;
+}
+
+a, button, [role="button"], .glow-btn, .close-btn {
+  cursor: none !important;
+}
