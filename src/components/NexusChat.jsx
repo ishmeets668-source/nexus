@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import './NexusChat.css';
 
 const NexusChat = () => {
   const [messages, setMessages] = useState([
@@ -55,11 +55,9 @@ const NexusChat = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
     setTimeout(() => {
       setIsTyping(false);
       let nexusMsgText = '';
-      
       const lowerInput = finalInput.toLowerCase();
       
       if (lowerInput.includes('hey nexus')) {
@@ -73,42 +71,13 @@ const NexusChat = () => {
       } else if (lowerInput.includes('open excel')) {
         nexusMsgText = "INITIALIZING_DATA_GRID... [EXCEL_LINK_ESTABLISHED]. Launching analytical processing module.";
         window.dispatchEvent(new CustomEvent('app-launch', { detail: 'EXCEL' }));
-      } else if (lowerInput.includes('open whatsapp')) {
-        nexusMsgText = "ACCESS_ENCRYPTED_COMMS... [WHATSAPP_UPLINK_STABLE]. Opening messaging hub.";
-      } else if (lowerInput.includes('open instagram')) {
-        nexusMsgText = "ACCESSING_SOCIAL_VISUALIZER... [INSTAGRAM_LINK_ACTIVE]. Synchronizing feed.";
-      } else if (lowerInput.includes('open camera') || lowerInput.includes('take photo')) {
-        nexusMsgText = "INITIALIZING_OPTICAL_SENSORS... [CAMERA_ENABLED]. Capturing visual data stream.";
-      } else if (lowerInput.includes('flashlight')) {
-        const state = lowerInput.includes('off') ? 'DE-ENERGIZED' : 'ENERGIZED';
-        nexusMsgText = `UPLIGHT_MODULE_${state}. Adjusting illumination levels.`;
-      } else if (lowerInput.includes('battery')) {
-        nexusMsgText = "ENERGY_LEVEL_ANALYSIS: [92%]. Power cells optimal. Estimated autonomy: 14 hours.";
-      } else if (lowerInput.includes('call')) {
-        const contact = lowerInput.split('call')[1]?.trim() || 'OPERATOR';
-        nexusMsgText = `INITIATING_VOICE_LINK... [DESTINATION: ${contact.toUpperCase()}]. Frequency established.`;
-      } else if (lowerInput.includes('locate') || lowerInput.includes('track')) {
-        nexusMsgText = "TRIANGULATING_GPS_COORDINATES... [LINK_LOCKED]. Device pinpointed at Sector 7-G.";
-      } else if (lowerInput.includes('weather')) {
-        nexusMsgText = "SCANNING_ATMOSPHERIC_SENSORS... Temp: 22°C. Conditions: Optimal for tactical operations.";
-      } else if (lowerInput.includes('airplane mode')) {
-        nexusMsgText = "SYSTEM_ISOLATION_PROTOCOL_ACTUATED. Disabling all wireless transceivers. Current state: STEALTH.";
-      } else if (lowerInput.includes('bluetooth')) {
-        nexusMsgText = "SCANNING_FOR_PERIPHERALS... [BT_4.2_READY]. Awaiting pairing request.";
-      } else if (lowerInput.includes('do not disturb') || lowerInput.includes('dnd')) {
-        nexusMsgText = "SILENCING_ALL_NON_TACTICAL_NOTIFICATIONS. Focus mode prioritized.";
-      } else if (lowerInput.includes('screenshot')) {
-        nexusMsgText = "CAPTURING_HUD_FRAME_DATA... [BUFFER_SAVED]. Image stored in tactical archive.";
-      } else if (lowerInput.includes('mobile help') || lowerInput.includes('commands')) {
-        nexusMsgText = "AVAILABLE_MOBILE_COMMANDS: [CALL, WHATSAPP, INSTAGRAM, CAMERA, FLASHLIGHT, BATTERY, LOCATE, WEATHER, AIRPLANE MODE, BLUETOOTH, DND, SCREENSHOT].";
+      } else if (lowerInput.includes('commands')) {
+        nexusMsgText = "AVAILABLE_COMMANDS: [HEY NEXUS, INTERLINK, OPEN NOTEPAD, OPEN EXCEL, OPEN CODE, OPEN BROWSER, SYSTEM STATUS].";
       } else {
         nexusMsgText = `PROCESSING_QUERY: "${finalInput}" ... [RESULT]: I am Nexus, your tactical neural interface. All systems are operational.`;
       }
 
-      const nexusMsg = { 
-        role: 'nexus', 
-        text: nexusMsgText 
-      };
+      const nexusMsg = { role: 'nexus', text: nexusMsgText };
       setMessages(prev => [...prev, nexusMsg]);
       speak(nexusMsgText);
     }, 1500);
@@ -116,21 +85,16 @@ const NexusChat = () => {
 
   const speak = (text) => {
     if ('speechSynthesis' in window) {
-      // Strip out the robotic prefixes for cleaner speech
       const cleanText = text.replace(/PROCESSING_QUERY:.*\[RESULT\]:/, '').trim();
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.pitch = 0.8; // Slightly deeper robotic voice
+      utterance.pitch = 0.8;
       utterance.rate = 1;
       window.speechSynthesis.speak(utterance);
     }
   };
 
   const toggleJarvisMode = () => {
-    if (!recognition.current) {
-      alert('Speech Recognition not supported in this browser.');
-      return;
-    }
-
+    if (!recognition.current) return;
     if (isAutoMode) {
       setIsAutoMode(false);
       recognition.current.stop();
@@ -142,96 +106,62 @@ const NexusChat = () => {
   };
 
   return (
-    <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '500px', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '10px' }}>
+    <div className="nexus-chat-container">
+      <div className="card-corner corner-tl"></div>
+      <div className="card-corner corner-tr"></div>
+      <div className="card-corner corner-bl"></div>
+      <div className="card-corner corner-br"></div>
+
+      <div className="chat-header">
         <div style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>[ COMMUNICATION_CHANNEL: NEXUS ]</div>
-        <div style={{ color: 'var(--neon-purple)', fontSize: '0.8rem' }}>ENCRYPTION: ACTIVE</div>
+        <div style={{ color: 'var(--neon-purple)', opacity: 0.8 }}>ENCRYPTION: ACTIVE</div>
       </div>
 
-      <div 
-        ref={scrollRef}
-        className="no-scrollbar"
-        style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px'
-        }}
-      >
+      <div ref={scrollRef} className="messages-window no-scrollbar">
         {messages.map((msg, i) => (
           <div 
             key={i} 
-            style={{ 
-              alignSelf: msg.role === 'nexus' ? 'flex-start' : 'flex-end',
-              maxWidth: '80%',
-              background: msg.role === 'nexus' ? 'rgba(0, 243, 255, 0.05)' : 'rgba(157, 0, 255, 0.05)',
-              borderLeft: msg.role === 'nexus' ? '2px solid var(--neon-blue)' : 'none',
-              borderRight: msg.role === 'user' ? '2px solid var(--neon-purple)' : 'none',
-              padding: '10px',
-              position: 'relative'
-            }}
+            className={`message-bubble ${msg.role === 'nexus' ? 'message-nexus' : 'message-user'}`}
           >
-            <div style={{ fontSize: '0.6rem', color: msg.role === 'nexus' ? 'var(--neon-blue)' : 'var(--neon-purple)', marginBottom: '5px' }}>
-              {msg.role.toUpperCase()} // {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            <div className="message-meta">
+              <span style={{ color: msg.role === 'nexus' ? 'var(--neon-blue)' : 'var(--neon-purple)' }}>
+                {msg.role.toUpperCase()} // ID_{Math.floor(1000 + Math.random() * 9000)}
+              </span>
+              <span style={{ opacity: 0.5 }}>{new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
             </div>
-            <div style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>{msg.text}</div>
+            <div style={{ fontSize: '0.9rem', lineHeight: '1.6', color: '#e0faff' }}>
+              {msg.role === 'nexus' && <span style={{ color: 'var(--neon-blue)', marginRight: '8px' }}>&gt;&gt;</span>}
+              {msg.text}
+            </div>
+            <div className="pkt-info">PKT_LEN: {msg.text.length}B</div>
           </div>
         ))}
         {isTyping && (
-          <div style={{ alignSelf: 'flex-start', color: 'var(--neon-blue)', fontSize: '0.8rem', padding: '10px' }}>
+          <div style={{ alignSelf: 'flex-start', color: 'var(--neon-blue)', fontSize: '0.7rem', padding: '10px', letterSpacing: '2px' }}>
             NEXUS_IS_THINKING<span className="dot-flashing">...</span>
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '15px', marginTop: '10px' }}>
+      <div className="chat-input-area">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="SEND_COMMAND_TO_NEXUS..."
-          style={{
-            flex: 1,
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid var(--border-color)',
-            color: '#fff',
-            padding: '10px',
-            fontFamily: 'inherit',
-            outline: 'none'
-          }}
+          className="chat-input"
         />
         <button 
           onClick={toggleJarvisMode}
           className="glow-btn"
           style={{ 
-            padding: '10px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px',
             borderColor: isAutoMode ? 'var(--neon-purple)' : 'var(--neon-blue)',
             color: isAutoMode ? 'var(--neon-purple)' : 'var(--neon-blue)',
             animation: (isListening || isAutoMode) ? 'pulse 1s infinite' : 'none'
           }}
-          title={isAutoMode ? "Disable JARVIS Mode" : "Enable JARVIS Mode"}
         >
-          <div style={{ position: 'relative', width: '22px', height: '22px' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%' }}>
-              <circle cx="12" cy="12" r="10" className="neural-ring" strokeDasharray="4 4" opacity="0.3" />
-              <circle cx="12" cy="12" r="6" strokeDasharray="2 2" opacity="0.5" />
-              <circle cx="12" cy="12" r="3" fill="currentColor" className={isListening || isAutoMode ? "neural-mic-active" : ""} />
-              {isAutoMode && <path d="M12 2v4M12 18v4M2 12h4M18 12h4" opacity="0.8" />}
-            </svg>
-          </div>
-          <span style={{ fontSize: '0.7rem' }}>{isAutoMode ? 'JARVIS_ACTIVE' : 'START_JARVIS'}</span>
-        </button>
-        <button 
-          onClick={() => handleSend()}
-          className="glow-btn" 
-          style={{ padding: '0 20px' }}
-        >
-          EXECUTE
+          <span style={{ fontSize: '0.6rem' }}>{isAutoMode ? 'JARVIS_ACTIVE' : 'START_JARVIS'}</span>
         </button>
       </div>
     </div>

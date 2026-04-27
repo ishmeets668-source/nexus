@@ -5,48 +5,90 @@
   width: 0;
   height: 0;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 100000;
 }
 
-.simple-cursor {
+.cursor-main {
   position: absolute;
   top: 0;
   left: 0;
-  width: 30px;
-  height: 30px;
-  margin-top: -15px;
-  margin-left: -15px;
-  border: 1px solid var(--neon-blue);
-  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-  transition: border-color 0.3s ease;
+  transform: translate(-50%, -50%);
 }
 
-.crosshair-v, .crosshair-h {
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #fff, 0 0 20px var(--neon-blue);
+  z-index: 5;
+}
+
+.cursor-ring-inner {
   position: absolute;
-  background: var(--neon-blue);
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--neon-blue);
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  animation: rotate 2s linear infinite;
 }
 
-.crosshair-v {
-  width: 1px;
-  height: 8px;
-  opacity: 0.8;
+.cursor-ring-outer {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0, 243, 255, 0.2);
+  border-radius: 50%;
 }
 
-.crosshair-h {
-  width: 8px;
-  height: 1px;
-  opacity: 0.8;
+.cursor-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--neon-blue);
 }
 
-/* Hide default cursor globally */
-html, body {
-  cursor: none !important;
+.bracket-tl { top: -20px; left: -20px; border-right: 0; border-bottom: 0; }
+.bracket-tr { top: -20px; right: -20px; border-left: 0; border-bottom: 0; }
+.bracket-bl { bottom: -20px; left: -20px; border-right: 0; border-top: 0; }
+.bracket-br { bottom: -20px; right: -20px; border-left: 0; border-top: 0; }
+
+.cursor-text {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.5rem;
+  color: var(--neon-blue);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
-a, button, [role="button"], .glow-btn, .close-btn {
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Interaction States */
+.is-hovering .cursor-bracket {
+  border-color: var(--neon-purple);
+  width: 15px;
+  height: 15px;
+}
+
+.is-clicking .cursor-ring-outer {
+  border-color: var(--neon-pink);
+  transform: scale(0.8);
+}
+
+body, a, button {
   cursor: none !important;
 }

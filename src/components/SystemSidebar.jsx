@@ -1,10 +1,10 @@
 import React from 'react';
-import { MessageSquare, Instagram, Camera, Map, Settings, BatteryCharging } from 'lucide-react';
+import { MessageSquare, Aperture, Camera, Map, Settings, BatteryCharging } from 'lucide-react';
 
 const SystemSidebar = () => {
   const mobileApps = [
     { icon: <MessageSquare size={20} />, name: 'WhatsApp', color: 'var(--neon-blue)' },
-    { icon: <Instagram size={20} />, name: 'Instagram', color: 'var(--neon-purple)' },
+    { icon: <Aperture size={20} />, name: 'Social', color: 'var(--neon-purple)' },
     { icon: <Camera size={20} />, name: 'Camera', color: 'var(--neon-blue)' },
     { icon: <Map size={20} />, name: 'Maps', color: 'var(--neon-purple)' },
     { icon: <Settings size={20} />, name: 'Settings', color: 'var(--neon-blue)' },
