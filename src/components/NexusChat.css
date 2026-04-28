@@ -11,8 +11,9 @@
 .chat-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   margin-bottom: 15px;
   font-family: 'Orbitron', sans-serif;
   font-size: 0.7rem;

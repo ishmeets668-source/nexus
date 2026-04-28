@@ -5,38 +5,63 @@ const LoadingScreen = ({ onFinished }) => {
   const [progress, setProgress] = useState(0);
   const [bootSequence, setBootSequence] = useState([]);
   const [isExiting, setIsExiting] = useState(false);
-  const [biometricStatus, setBiometricStatus] = useState('SCANNING');
-  const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
-  const canvasRef = useRef(null);
+  const [biometricStatus, setBiometricStatus] = useState('WAITING_FOR_CAMERA');
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [currentModule, setCurrentModule] = useState('KERNEL_INIT');
+  const [faceMatch, setFaceMatch] = useState(0);
+  
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   const logs = useMemo(() => [
-    "KERNEL_BOOT_INITIATED",
-    "LOADING_SYNAPTIC_DRIVERS...",
-    "MAPPING_NEURAL_PATHWAYS...",
-    "CALIBRATING_OPTICAL_SENSORS...",
-    "SYNCING_QUANTUM_CORE...",
-    "DECRYPTING_BIO_METRICS...",
-    "ESTABLISHING_SECURE_UPLINK...",
-    "CHECKING_HARDWARE_INTEGRITY...",
-    "NEURAL_NEXUS_OS_v4.2.0_LOADED",
-    "AUTHENTICATING_USER_ID...",
-    "SYSTEM_STABLE_READY_FOR_ENTRY"
+    "[ OK ] INITIALIZING_NEURAL_BUS_v8.4",
+    "[ OK ] LOADING_SYNAPTIC_DRIVERS...",
+    "[ OK ] MAPPING_NEURAL_PATHWAYS_LEVEL_1",
+    "[ OK ] MAPPING_NEURAL_PATHWAYS_LEVEL_2",
+    "[ WAIT ] CALIBRATING_OPTICAL_SENSORS...",
+    "[ OK ] OPTICAL_SENSORS_STABLE",
+    "[ OK ] SYNCING_QUANTUM_CORE_RESONANCE",
+    "[ WAIT ] REQUESTING_FACIAL_AUTH_UPLINK...",
+    "[ OK ] CAMERA_LINK_ESTABLISHED",
+    "[ SCAN ] ANALYZING_FACIAL_STRUCTURE...",
+    "[ SCAN ] VERIFYING_RETINAL_PATTERN...",
+    "[ OK ] FACIAL_MATCH_99.8%_FOUND",
+    "[ OK ] NEURAL_NEXUS_OS_v5.0.0_LOADED",
+    "[ AUTH ] AUTHENTICATING_OPERATOR_CREDENTIALS...",
+    "[ OK ] SYSTEM_STABLE_READY_FOR_ENTRY"
   ], []);
 
-  const dataStreams = useMemo(() => 
-    Array.from({ length: 12 }).map((_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 8}s`,
-      duration: `${4 + Math.random() * 12}s`,
-      content: Array.from({ length: 30 }).map(() => Math.floor(Math.random() * 16).toString(16).toUpperCase()).join('')
-    })), []);
+  // Handle Webcam
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          streamRef.current = stream;
+          setBiometricStatus('SCANNING');
+        }
+      } catch (err) {
+        console.error("Webcam access denied", err);
+        setBiometricStatus('BYPASS_ACTIVE'); // Fallback if no camera
+      }
+    };
+    
+    // Start camera after a small delay
+    const timer = setTimeout(startCamera, 2000);
+    return () => {
+        clearTimeout(timer);
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+        }
+    };
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      setCoordinates({
-        x: Math.floor((e.clientX / window.innerWidth) * 1000),
-        y: Math.floor((e.clientY / window.innerHeight) * 1000)
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
       });
     };
     window.addEventListener('mousemove', handleMouseMove);
@@ -44,229 +69,225 @@ const LoadingScreen = ({ onFinished }) => {
   }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const characters = "01ABCDEF";
-    const fontSize = 14;
-    const columns = canvas.width / fontSize;
-    const drops = new Array(Math.floor(columns)).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(0, 243, 255, 0.08)';
-      ctx.font = `${fontSize}px Share Tech Mono`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = characters.charAt(Math.floor(Math.random() * characters.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.99) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    const interval = setInterval(draw, 40);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     let currentLog = 0;
     const logInterval = setInterval(() => {
       if (currentLog < logs.length) {
+        // Only progress logs if camera is ready or bypassed
+        if (logs[currentLog].includes("CAMERA_LINK") && biometricStatus === 'WAITING_FOR_CAMERA') return;
+        
         setBootSequence(prev => [...prev, logs[currentLog]]);
-        if (logs[currentLog].includes("AUTHENTICATING")) {
-            setTimeout(() => setBiometricStatus('AUTHORIZED'), 800);
+        
+        if (logs[currentLog].includes("FACIAL_MATCH")) {
+            setBiometricStatus('MATCH_FOUND');
+            setTimeout(() => setBiometricStatus('AUTHORIZED'), 1000);
         }
         currentLog++;
       } else {
         clearInterval(logInterval);
       }
-    }, 400);
+    }, 350);
 
     const progressInterval = setInterval(() => {
       setProgress(prev => {
+        // Pause progress during facial scanning
+        if (prev > 45 && prev < 70 && biometricStatus === 'SCANNING') {
+            setFaceMatch(f => Math.min(100, f + Math.random() * 5));
+            return prev + 0.1; 
+        }
+
         if (prev >= 100) {
           clearInterval(progressInterval);
           setTimeout(() => {
             setIsExiting(true);
-            setTimeout(onFinished, 1500);
-          }, 1000);
+            setTimeout(onFinished, 1800);
+          }, 1200);
           return 100;
         }
-        const step = Math.random() > 0.95 ? 15 : 2;
-        return Math.min(100, prev + step * Math.random());
+        const step = Math.random() > 0.9 ? 12 : 1.5;
+        const next = Math.min(100, prev + step * Math.random());
+        
+        if (next < 25) setCurrentModule('KERNEL_INIT');
+        else if (next < 50) setCurrentModule('NEURAL_MAPPING');
+        else if (next < 75) setCurrentModule('FACIAL_SCAN');
+        else setCurrentModule('SYSTEM_AUTH');
+        
+        return next;
       });
-    }, 120);
+    }, 100);
 
     return () => {
       clearInterval(logInterval);
       clearInterval(progressInterval);
     };
-  }, [onFinished, logs]);
+  }, [onFinished, logs, biometricStatus]);
 
   return (
     <div className={`loading-overlay ${isExiting ? 'exit' : ''}`}>
       <div className="noise-overlay"></div>
-      <div className="hex-grid-bg"></div>
-      <canvas ref={canvasRef} className="matrix-bg" />
-      <div className="robotic-grid"></div>
-      <div className="loading-vignette"></div>
-      
-      <div className="tech-numbers">
-          {[...Array(10)].map((_, i) => (
-              <div key={i} className="tech-number">
-                  {Math.floor(Math.random() * 1000000).toString(16).toUpperCase()}
+      <div className="vignette-overlay"></div>
+      <div className="parallax-grid" style={{ transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px) perspective(1000px) rotateX(${mousePos.y * 0.1}deg) rotateY(${mousePos.x * -0.1}deg)` }}></div>
+      <div className="parallax-hex" style={{ transform: `translate(${mousePos.x * -0.3}px, ${mousePos.y * -0.3}px)` }}></div>
+
+      <div className="hud-container">
+        <header className="hud-top-bar">
+          <div className="corner-tag">NEXUS_OS // FACIAL_AUTH_MODE</div>
+          <div className="header-status-group">
+            <div className="status-indicator">
+              <span className="label">SIGNAL</span>
+              <div className="signal-bars">
+                {[1, 2, 3, 4, 5].map(b => (
+                  <div key={b} className={`sig-bar ${progress > b * 15 ? 'active' : ''}`}></div>
+                ))}
               </div>
-          ))}
+            </div>
+            <div className="status-indicator">
+              <span className="label">FACIAL_SYNC</span>
+              <span className="value">{faceMatch.toFixed(1)}%</span>
+            </div>
+          </div>
+          <div className="time-group">
+            <span className="current-time">{new Date().toLocaleTimeString([], { hour12: false })}</span>
+            <span className="date-stamp">SECURE_SHELL_v5</span>
+          </div>
+        </header>
+
+        <main className="hud-main-grid">
+          <aside className="hud-side left">
+            <div className="hud-panel panel-diagonal">
+              <div className="panel-header">NEURAL_FLUX</div>
+              <div className="flux-bars">
+                {[...Array(12)].map((_, i) => (
+                  <div key={i} className="flux-bar-group">
+                    <div className="flux-bar-fill" style={{ 
+                      height: `${Math.random() * 100}%`,
+                      animationDelay: `${i * 0.1}s`,
+                      backgroundColor: progress > (i * 8) ? 'var(--neon-blue)' : 'rgba(255,255,255,0.05)'
+                    }}></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="hud-panel circular-panel">
+               <svg viewBox="0 0 100 100" className="gauge-svg">
+                  <circle className="gauge-bg" cx="50" cy="50" r="45" />
+                  <circle className="gauge-progress" cx="50" cy="50" r="45" style={{ strokeDashoffset: 283 - (283 * progress / 100) }} />
+                  <text x="50" y="55" className="gauge-text">{Math.round(progress)}%</text>
+               </svg>
+               <div className="gauge-label">UPLINK_STABILITY</div>
+            </div>
+          </aside>
+
+          <section className="hud-center">
+            <div className="face-unlock-container">
+              <div className="camera-frame">
+                <video ref={videoRef} autoPlay playsInline muted className="webcam-feed" />
+                <div className="camera-overlay">
+                  {/* Face Mesh Overlay (Simulated) */}
+                  <svg className="face-mesh" viewBox="0 0 200 200">
+                    <path d="M100 40 Q140 40 160 80 Q170 120 100 160 Q30 120 40 80 Q60 40 100 40" fill="none" stroke="var(--neon-blue)" strokeWidth="0.5" opacity="0.4" />
+                    <circle cx="70" cy="80" r="5" fill="none" stroke="var(--neon-blue)" strokeWidth="0.5" />
+                    <circle cx="130" cy="80" r="5" fill="none" stroke="var(--neon-blue)" strokeWidth="0.5" />
+                    <path d="M80 130 Q100 140 120 130" fill="none" stroke="var(--neon-blue)" strokeWidth="0.5" />
+                    {/* Scanning Points */}
+                    {[...Array(12)].map((_, i) => (
+                      <circle 
+                        key={i} 
+                        cx={100 + Math.cos(i) * 60} 
+                        cy={100 + Math.sin(i) * 60} 
+                        r="1" 
+                        fill="var(--neon-blue)"
+                      >
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" delay={`${i * 0.2}s`} />
+                      </circle>
+                    ))}
+                  </svg>
+                  <div className="scan-laser"></div>
+                  <div className="target-corners">
+                    <div className="corner t-l"></div>
+                    <div className="corner t-r"></div>
+                    <div className="corner b-l"></div>
+                    <div className="corner b-r"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="title-block">
+                <h1 className="main-title">NEXUS<span className="alt-title">OS</span></h1>
+              </div>
+
+              <div className={`biometric-readout ${biometricStatus.toLowerCase()}`}>
+                <div className="readout-text">
+                  {biometricStatus === 'WAITING_FOR_CAMERA' && 'INITIALIZING_OPTICAL_LINK...'}
+                  {biometricStatus === 'SCANNING' && `ANALYZING_FACIAL_GEOMETRY: ${faceMatch.toFixed(1)}%`}
+                  {biometricStatus === 'MATCH_FOUND' && 'FACIAL_MATCH_CONFIRMED // OPERATOR_01'}
+                  {biometricStatus === 'AUTHORIZED' && 'NEURAL_ACCESS_GRANTED'}
+                  {biometricStatus === 'BYPASS_ACTIVE' && 'CAMERA_OFFLINE // BYPASSING_TO_MANUAL_AUTH'}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside className="hud-side right">
+             <div className="hud-panel panel-diagonal">
+                <div className="panel-header">BOOT_SEQUENCE</div>
+                <div className="boot-logs-v2">
+                  {bootSequence.slice(-10).map((log, i) => (
+                    <div key={i} className="log-row" style={{ opacity: (i + 1) / 10 }}>
+                      <span className="log-prefix">»</span>
+                      <span className="log-content">{log}</span>
+                    </div>
+                  ))}
+                </div>
+             </div>
+
+             <div className="hud-panel panel-compact">
+                <div className="panel-header">AUTHENTICATION_METRICS</div>
+                <div className="metric-bars">
+                  {['BIOMETRIC', 'NEURAL', 'SECURITY'].map(m => (
+                    <div key={m} className="metric-row">
+                      <span className="m-name">{m}</span>
+                      <div className="m-bar"><div className="m-fill" style={{ width: `${progress}%` }}></div></div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+          </aside>
+        </main>
+
+        <footer className="hud-bottom-bar">
+          <div className="footer-left">
+            <div className="stat-box">
+              <span className="stat-label">MODE</span>
+              <span className="stat-value">FACIAL_RECOGNITION</span>
+            </div>
+          </div>
+          
+          <div className="footer-center">
+            <div className="global-progress-container">
+              <div className="progress-track">
+                <div className="progress-fill-v3" style={{ width: `${progress}%` }}></div>
+              </div>
+              <div className="progress-markers">
+                <span>0%</span>
+                <span>SYSTEM_INITIALIZING</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer-right">
+             <div className="integrity-check">
+                <span className="label">SECURITY_STATUS</span>
+                <div className="integrity-value" style={{ color: biometricStatus === 'AUTHORIZED' ? '#00ff88' : 'var(--neon-blue)' }}>
+                  {biometricStatus === 'AUTHORIZED' ? 'SECURE' : 'AUTHENTICATING'}
+                </div>
+             </div>
+          </div>
+        </footer>
       </div>
-
-      <div className="radar-container">
-          <div className="radar-sweep"></div>
-          <div className="radar-blip" style={{ top: '30%', left: '40%' }}></div>
-          <div className="radar-blip" style={{ top: '60%', left: '70%', animationDelay: '0.5s' }}></div>
-          <div className="radar-blip" style={{ top: '20%', left: '80%', animationDelay: '1.2s' }}></div>
-      </div>
-
-      {dataStreams.map(stream => (
-        <div 
-          key={stream.id} 
-          className="data-stream" 
-          style={{ left: stream.left, animationDelay: stream.delay, animationDuration: stream.duration }}
-        >
-          {stream.content}
-        </div>
-      ))}
-
-      <div className="loading-content-wrapper">
-        <div className="hud-header">
-            <div className="hud-line"></div>
-            <div className="hud-text-group">
-                <span className="hud-label">COORDS:</span>
-                <span className="hud-value">X:{coordinates.x} Y:{coordinates.y}</span>
-            </div>
-            <div className="hud-text-group">
-                <span className="hud-label">CORE_TEMP:</span>
-                <span className="hud-value">{32 + Math.floor(progress / 5)}°C</span>
-            </div>
-            <div className="hud-text-group">
-                <span className="hud-label">PROJECT:</span>
-                <span className="hud-value">NEURAL_NEXUS</span>
-            </div>
-            <div className="hud-line"></div>
-        </div>
-
-        <div className="main-display">
-            <div className="side-hud left">
-                <div className="hud-box">
-                    <div className="box-title">NEURAL_LOAD</div>
-                    <div className="bars">
-                        {[...Array(15)].map((_, i) => (
-                            <div key={i} className="bar" style={{ 
-                                height: `${Math.random() * 80 + 20}px`, 
-                                animationDelay: `${i * 0.03}s`,
-                                background: progress > (i * 6) ? 'var(--neon-blue)' : 'rgba(0, 243, 255, 0.05)'
-                            }}></div>
-                        ))}
-                    </div>
-                </div>
-                <div className="hud-box">
-                    <div className="box-title">BOOT_STAGES</div>
-                    <div className="boot-stage-indicator">
-                        {[1, 2, 3, 4].map(s => (
-                            <div key={s} className={`stage-dot ${progress >= s * 25 ? 'active' : ''}`}></div>
-                        ))}
-                    </div>
-                    <div style={{ fontSize: '0.7rem', marginTop: '15px', color: 'var(--neon-blue)', letterSpacing: '2px' }}>
-                        PHASE_{Math.floor(progress/25) + 1}_INITIALIZING
-                    </div>
-                </div>
-            </div>
-
-            <div className="center-visual">
-                <div className="scanner-container">
-                    <div className="core-ring ring-outer" style={{ borderStyle: 'dotted', borderWidth: '4px' }}></div>
-                    <div className="nexus-core-v2" style={{ transform: `scale(${1 + progress/200})` }}>
-                        <div className="orbit-1"></div>
-                        <div className="orbit-2"></div>
-                        <div className="core-glow"></div>
-                        <div className="biometric-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.3">
-                                <circle cx="12" cy="12" r="11" />
-                                <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" />
-                                <circle cx="12" cy="12" r="5" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <h1 className="nexus-title-v2">
-                    <span className="glitch-text" data-text="NEXUS">NEXUS</span> NEURAL<span className="glitch-text" data-text="NEXUS">NEXUS</span>
-                </h1>
-                <div className={`bio-status ${biometricStatus.toLowerCase()}`}>
-                    {biometricStatus === 'SCANNING' ? 'SCANNING_NEURAL_SIGNATURE...' : 'NEURAL_NEXUS_ACCESS_GRANTED'}
-                </div>
-            </div>
-
-            <div className="side-hud right">
-                <div className="hud-box">
-                    <div className="box-title">NEURAL_NEXUS_LOGS</div>
-                    <div className="compact-logs" style={{ maxHeight: '200px', overflow: 'hidden' }}>
-                        {bootSequence.slice(-8).map((log, i) => (
-                            <div key={i} className="compact-log" style={{ opacity: (i + 1) / 8, fontSize: '0.7rem' }}>
-                                <span className="arrow" style={{ color: 'var(--neon-purple)' }}>»</span> {log}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="hud-box">
-                    <div className="box-title">MESH_NETWORK</div>
-                    <div className="node-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                        {[...Array(16)].map((_, i) => (
-                            <div key={i} className={`node ${progress > (i+1)*6 ? 'active' : ''}`} style={{ width: '15px', height: '15px' }}></div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div className="footer-hud">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="hud-label">UPLINK_STRENGTH</span>
-                    <span className="hud-value" style={{ fontSize: '1.2rem' }}>{Math.min(100, Math.floor(progress * 1.2))}%</span>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                    <span className="hud-label">TOTAL_LOAD</span>
-                    <span className="hud-value" style={{ fontSize: '1.2rem' }}>{Math.round(progress)}%</span>
-                </div>
-            </div>
-            <div className="progress-bar-v2" style={{ height: '10px' }}>
-                <div className="progress-fill" style={{ width: `${progress}%` }}>
-                    <div className="progress-flare"></div>
-                </div>
-            </div>
-            <div className="progress-footer-text" style={{ marginTop: '10px' }}>
-                <span>INTEGRITY: 100%</span>
-                <span>OS_KERNEL: NEXUS_CORE_v4</span>
-                <span>THREAT_LEVEL: ZERO</span>
-                <span>ENCRYPTION: AES-256-QUANTUM</span>
-            </div>
-        </div>
-      </div>
-
-      <div className="corner-bracket tl" style={{ width: '100px', height: '100px' }}></div>
-      <div className="corner-bracket tr" style={{ width: '100px', height: '100px' }}></div>
-      <div className="corner-bracket bl" style={{ width: '100px', height: '100px' }}></div>
-      <div className="corner-bracket br" style={{ width: '100px', height: '100px' }}></div>
     </div>
   );
 };
 
 export default LoadingScreen;
-
-

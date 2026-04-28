@@ -25,12 +25,24 @@
 }
 
 .monitor-title {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--neon-blue);
     margin: 0;
     white-space: nowrap;
     letter-spacing: 2px;
     font-weight: 700;
+}
+
+.monitor-subtitle {
+    font-size: 0.45rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+.header-text-group {
+    display: flex;
+    flex-direction: column;
 }
 
 .header-line {
@@ -102,7 +114,21 @@
     padding: 12px;
     display: flex;
     flex-direction: column;
+    gap: 10px;
     min-height: 120px;
+    position: relative;
+}
+
+.scanline-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        transparent 50%,
+        rgba(0, 243, 255, 0.05) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .graph-header {
@@ -110,6 +136,8 @@
     color: var(--neon-blue);
     margin-bottom: 10px;
     opacity: 0.8;
+    display: flex;
+    justify-content: space-between;
 }
 
 .flux-graph {
@@ -135,6 +163,43 @@
 .status-bar-segment.active {
     background: var(--neon-blue);
     box-shadow: 0 0 10px var(--neon-blue);
+}
+
+.core-breakdown {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+}
+
+.breakdown-header {
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.core-bars {
+    display: flex;
+    gap: 4px;
+    height: 30px;
+    align-items: flex-end;
+}
+
+.core-bar {
+    flex: 1;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.core-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transition: height 0.3s ease;
+    box-shadow: 0 0 5px currentColor;
 }
 
 .core-ring-container {
@@ -172,6 +237,18 @@
     text-transform: uppercase;
 }
 
+.event-log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.log-header {
+    font-size: 0.5rem;
+    color: var(--neon-purple);
+    letter-spacing: 1px;
+}
+
 .event-log {
     background: rgba(0, 0, 0, 0.5);
     padding: 8px;
@@ -190,4 +267,72 @@
 .log-time {
     color: var(--neon-blue);
     margin-right: 5px;
+}
+
+.log-msg {
+    color: var(--text-main);
+}
+
+.threat-status.enhanced {
+    padding: 10px;
+    background: rgba(157, 0, 255, 0.03);
+    border: 1px solid rgba(157, 0, 255, 0.2);
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.status-label {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.status-percent {
+    font-size: 0.6rem;
+    color: var(--neon-blue);
+    font-weight: bold;
+}
+
+.fidelity-bars {
+    display: flex;
+    gap: 3px;
+    height: 6px;
+}
+
+.fidelity-bar {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.fidelity-bar.active {
+    background: var(--neon-blue);
+    box-shadow: 0 0 5px var(--neon-blue);
+    animation: bar-flicker 2s infinite;
+}
+
+@keyframes bar-flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.flux-fps {
+    font-size: 0.45rem;
+    color: var(--neon-orange);
+}
+
+.sync-status {
+    color: var(--neon-blue);
+    animation: blink 1s infinite;
+}
+
+.graph-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    margin-top: 5px;
 }

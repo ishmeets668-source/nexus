@@ -112,9 +112,8 @@ const NexusChat = () => {
       <div className="card-corner corner-bl"></div>
       <div className="card-corner corner-br"></div>
 
-      <div className="chat-header">
-        <div style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>[ COMMUNICATION_CHANNEL: NEXUS ]</div>
-        <div style={{ color: 'var(--neon-purple)', opacity: 0.8 }}>ENCRYPTION: ACTIVE</div>
+      <div className="chat-header" style={{ justifyContent: 'center' }}>
+        <div style={{ color: 'var(--neon-blue)', fontWeight: 'bold' }}>COMMAND_INTERFACE</div>
       </div>
 
       <div ref={scrollRef} className="messages-window no-scrollbar">
@@ -161,7 +160,7 @@ const NexusChat = () => {
             animation: (isListening || isAutoMode) ? 'pulse 1s infinite' : 'none'
           }}
         >
-          <span style={{ fontSize: '0.6rem' }}>{isAutoMode ? 'JARVIS_ACTIVE' : 'START_JARVIS'}</span>
+          <span style={{ fontSize: '0.6rem' }}>{isAutoMode ? 'ACTIVE' : 'START'}</span>
         </button>
       </div>
     </div>

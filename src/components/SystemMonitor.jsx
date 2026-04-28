@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import './SystemMonitor.css';
 
 const SystemMonitor = () => {
@@ -71,7 +71,10 @@ const SystemMonitor = () => {
         <div className="header-icon">
             <div className="pulse-dot"></div>
         </div>
-        <h4 className="monitor-title">SYSTEM_MONITOR_v2.5 // ARCH_CORE</h4>
+        <div className="header-text-group">
+          <h4 className="monitor-title">SYSTEM_DIAGNOSTIC_v4.2</h4>
+          <span className="monitor-subtitle">ARCH_NEXUS // CORE_NODE_01</span>
+        </div>
         <div className="header-line"></div>
       </div>
       
@@ -79,17 +82,37 @@ const SystemMonitor = () => {
         <div className="stats-column">
           <StatItem label="MEM_ALLOCATION" value={`${stats.ram}GB`} sub="DDR5_NEXUS" color="var(--neon-blue)" />
           <StatItem label="LINK_LATENCY" value={`${stats.net}MS`} sub="UPLINK_STABLE" color="var(--neon-purple)" />
-          <StatItem label="THERMAL_SENS" value={`${stats.temp}°C`} sub={stats.temp > 48 ? 'HIGH_TEMP' : 'OPTIMAL'} color={stats.temp > 48 ? 'var(--neon-pink)' : 'var(--neon-blue)'} />
           
+          <div className="core-breakdown">
+            <div className="breakdown-header">NEURAL_CORES_LOAD</div>
+            <div className="core-bars">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="core-bar">
+                  <div 
+                    className="core-fill" 
+                    style={{ 
+                      height: `${Math.max(10, (stats.cpu * (0.8 + Math.random() * 0.4))).toFixed(0)}%`,
+                      backgroundColor: i % 3 === 0 ? 'var(--neon-purple)' : 'var(--neon-blue)'
+                    }}
+                  ></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="core-ring-container">
             <ProgressRing percentage={stats.cpu} label="CPU_LOAD" color="var(--neon-blue)" />
-            <ProgressRing percentage={stats.disk} label="DISK_I/O" color="var(--neon-purple)" />
+            <ProgressRing percentage={stats.disk} label="IO_STABLE" color="var(--neon-purple)" />
           </div>
         </div>
 
         <div className="graph-column">
-            <div className="graph-header">REAL_TIME_FLUX // 60FPS</div>
+            <div className="graph-header">
+              <span>REAL_TIME_FLUX</span>
+              <span className="flux-fps">60 FPS</span>
+            </div>
             <div className="graph-container">
+                <div className="scanline-overlay"></div>
                 <svg viewBox="0 0 200 60" className="flux-graph">
                     <defs>
                         <linearGradient id="graphGradient" x1="0" y1="0" x2="0" y2="1">
@@ -110,50 +133,54 @@ const SystemMonitor = () => {
                 </svg>
             </div>
             
-            <div className="event-log" ref={logRef}>
-                {events.map((ev, i) => (
-                    <div key={i} className="log-entry">
-                        <span className="log-time">[{ev.time}]</span>
-                        <span className="log-msg">{ev.msg}</span>
-                    </div>
-                ))}
+            <div className="event-log-container">
+              <div className="log-header">DIAGNOSTIC_LOG_STREAM</div>
+              <div className="event-log" ref={logRef}>
+                  {events.map((ev, i) => (
+                      <div key={i} className="log-entry">
+                          <span className="log-time">[{ev.time}]</span>
+                          <span className="log-msg">{ev.msg}</span>
+                      </div>
+                  ))}
+              </div>
             </div>
 
             <div className="graph-footer">
                 <span>0ms</span>
-                <span>SYNC_OK</span>
-                <span>1s</span>
+                <span className="sync-status">NODE_SYNC_OK</span>
+                <span>1.5s</span>
             </div>
         </div>
       </div>
 
-      <div className="threat-status">
-        <div className="status-label">
-            <span>SECURITY_THREAT_DETECTION</span>
-            <span style={{ color: 'var(--neon-blue)', opacity: 0.8 }}>ACTIVE_SHIELD</span>
+      <div className="threat-status enhanced">
+        <div className="status-header">
+            <span className="status-label">NEURAL_SYNC_FIDELITY</span>
+            <span className="status-percent">99.8%</span>
         </div>
-        <div className="status-bar-container">
-            <div className="status-bar-segment active"></div>
-            <div className="status-bar-segment active"></div>
-            <div className="status-bar-segment active"></div>
-            <div className="status-bar-segment"></div>
-            <div className="status-bar-segment"></div>
-            <span className="status-value">MINIMAL</span>
+        <div className="fidelity-bars">
+          {[...Array(20)].map((_, i) => (
+            <div 
+              key={i} 
+              className={`fidelity-bar ${i < 18 ? 'active' : ''}`}
+              style={{ animationDelay: `${i * 0.05}s` }}
+            ></div>
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-const StatItem = ({ label, value, sub, color }) => (
+const StatItem = memo(({ label, value, sub, color }) => (
   <div className="stat-item" style={{ borderLeftColor: color }}>
     <div className="stat-label">{label}</div>
     <div className="stat-value" style={{ color }}>{value}</div>
     <div className="stat-sub">{sub}</div>
   </div>
-);
+));
 
-const ProgressRing = ({ percentage, label, color }) => {
+const ProgressRing = memo(({ percentage, label, color }) => {
     const radius = 25;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (percentage / 100) * circumference;
@@ -168,6 +195,7 @@ const ProgressRing = ({ percentage, label, color }) => {
                     strokeDasharray={circumference}
                     strokeDashoffset={offset}
                     stroke={color}
+                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
                 />
                 <text 
                     x="50%" y="50%" 
@@ -183,7 +211,7 @@ const ProgressRing = ({ percentage, label, color }) => {
             <span className="ring-label">{label}</span>
         </div>
     );
-};
+});
 
 export default SystemMonitor;
 

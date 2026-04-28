@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { isMobile } from '../utils/device';
 
 const AIHeart = () => {
   const canvasRef = useRef(null);
@@ -11,8 +12,8 @@ const AIHeart = () => {
     let animationFrameId;
 
     const nodes = [];
-    const nodeCount = 50;
-    const maxDistance = 80;
+    const nodeCount = isMobile() ? 20 : 50;
+    const maxDistance = isMobile() ? 60 : 80;
 
     class Node {
       constructor() {
