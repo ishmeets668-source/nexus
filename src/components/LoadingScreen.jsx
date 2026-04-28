@@ -9,6 +9,7 @@ const LoadingScreen = ({ onFinished }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [currentModule, setCurrentModule] = useState('KERNEL_INIT');
   const [faceMatch, setFaceMatch] = useState(0);
+  const [showBypass, setShowBypass] = useState(false);
   
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -52,8 +53,13 @@ const LoadingScreen = ({ onFinished }) => {
     
     // Start camera after a small delay
     const timer = setTimeout(startCamera, 2000);
+    
+    // Show bypass button if loading takes too long
+    const bypassTimer = setTimeout(() => setShowBypass(true), 6000);
+
     return () => {
         clearTimeout(timer);
+        clearTimeout(bypassTimer);
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
         }
@@ -228,6 +234,19 @@ const LoadingScreen = ({ onFinished }) => {
                   {biometricStatus === 'BYPASS_ACTIVE' && 'CAMERA_OFFLINE // BYPASSING_TO_MANUAL_AUTH'}
                 </div>
               </div>
+
+              {showBypass && biometricStatus !== 'AUTHORIZED' && (
+                <button 
+                  className="glow-btn bypass-btn" 
+                  onClick={() => {
+                    setBiometricStatus('AUTHORIZED');
+                    setProgress(100);
+                  }}
+                  style={{ marginTop: '20px', fontSize: '0.6rem' }}
+                >
+                  FORCE_MANUAL_OVERRIDE
+                </button>
+              )}
             </div>
           </section>
 

@@ -18,6 +18,10 @@
   --glitch-speed: 0.3s;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 html, body {
   background-color: var(--deep-bg);
   margin: 0;
