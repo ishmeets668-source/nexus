@@ -19,7 +19,7 @@ const ComponentLoader = () => (
 );
 
 function DashboardContent() {
-  const { isInterlinking, latency, systemStatus } = useSystem();
+  const { isInterlinking, latency, systemStatus, theme, toggleTheme } = useSystem();
   const [isLoading, setIsLoading] = useState(true);
   const [isSecurityOpen, setIsSecurityOpen] = useState(false);
   const [systemTime, setSystemTime] = useState(new Date().toLocaleTimeString());
@@ -83,6 +83,13 @@ function DashboardContent() {
           </div>
 
           <div className="nav-group">
+            <button 
+              className="status-badge" 
+              onClick={toggleTheme}
+              style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.05)' }}
+            >
+              {theme === 'dark' ? 'LIGHT_UI' : 'DARK_UI'}
+            </button>
             <div className="time-display">
               <div className="system-time">{systemTime}</div>
               <div className="system-link">{UI_STRINGS.NEURAL_LINK}</div>
@@ -152,7 +159,7 @@ function DashboardContent() {
 
       {/* Loading Overlay */}
       {isLoading && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="suspense-fallback">LOADING_SYSTEM_CORE...</div>}>
           <LoadingScreen onFinished={() => setIsLoading(false)} />
         </Suspense>
       )}

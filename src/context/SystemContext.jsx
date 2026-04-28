@@ -15,6 +15,12 @@ export const SystemProvider = ({ children }) => {
   const [isInterlinking, setIsInterlinking] = useState(false);
   const [systemStatus, setSystemStatus] = useState('STABLE');
   const [latency, setLatency] = useState(14);
+  const [isLiteMode, setIsLiteMode] = useState(false);
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     // Simulate periodic latency fluctuations
@@ -29,10 +35,18 @@ export const SystemProvider = ({ children }) => {
     setTimeout(() => setIsInterlinking(false), 500);
   };
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   const value = {
     isInterlinking,
     systemStatus,
     latency: Math.floor(latency),
+    isLiteMode,
+    setIsLiteMode,
+    theme,
+    toggleTheme,
     triggerInterlink,
     version: SYSTEM_CONFIG.VERSION
   };

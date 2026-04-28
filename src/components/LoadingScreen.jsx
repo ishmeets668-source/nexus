@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSystem } from '../context/SystemContext';
 import './LoadingScreen.css';
 
 const LoadingScreen = ({ onFinished }) => {
@@ -10,6 +11,7 @@ const LoadingScreen = ({ onFinished }) => {
   const [currentModule, setCurrentModule] = useState('KERNEL_INIT');
   const [faceMatch, setFaceMatch] = useState(0);
   const [showBypass, setShowBypass] = useState(false);
+  const { theme, toggleTheme } = useSystem();
   
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -131,7 +133,10 @@ const LoadingScreen = ({ onFinished }) => {
   }, [onFinished, logs, biometricStatus]);
 
   return (
-    <div className={`loading-overlay ${isExiting ? 'exit' : ''}`}>
+    <div className={`loading-overlay ${isExiting ? 'exit' : ''} ${theme}-theme`}>
+      <button className="theme-toggle" onClick={toggleTheme} style={{ zIndex: 1000, position: 'absolute', top: '20px', right: '20px', background: 'rgba(0,0,0,0.5)', color: 'white', border: '1px solid white', padding: '5px' }}>
+        TOGGLE_THEME
+      </button>
       <div className="noise-overlay"></div>
       <div className="vignette-overlay"></div>
       <div className="parallax-grid" style={{ transform: `translate(${mousePos.x * 0.5}px, ${mousePos.y * 0.5}px) perspective(1000px) rotateX(${mousePos.y * 0.1}deg) rotateY(${mousePos.x * -0.1}deg)` }}></div>
@@ -287,7 +292,7 @@ const LoadingScreen = ({ onFinished }) => {
           
           <div className="footer-center">
             <div className="global-progress-container">
-              <div className="progress-track">
+              <div className="progress-track" style={{ background: 'rgba(128,128,128,0.1)' }}>
                 <div className="progress-fill-v3" style={{ width: `${progress}%` }}></div>
               </div>
               <div className="progress-markers">

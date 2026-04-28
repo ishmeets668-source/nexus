@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { isMobile } from '../utils/device';
+import { useSystem } from '../context/SystemContext';
 
 const AIHeart = () => {
+  const { isLiteMode } = useSystem();
   const canvasRef = useRef(null);
   const [load, setLoad] = useState(42);
 
@@ -98,6 +100,8 @@ const AIHeart = () => {
 
       animationFrameId = requestAnimationFrame(animate);
     };
+
+    if (isLiteMode) return;
 
     animate();
 
