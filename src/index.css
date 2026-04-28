@@ -18,14 +18,13 @@
   --glitch-speed: 0.3s;
 }
 
-* {
+html, body {
+  background-color: var(--deep-bg);
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
-  background-color: var(--deep-bg);
   color: var(--text-main);
   font-family: 'Outfit', sans-serif;
   overflow-x: hidden;

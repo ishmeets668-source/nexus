@@ -35,6 +35,9 @@ const LoadingScreen = ({ onFinished }) => {
   useEffect(() => {
     const startCamera = async () => {
       try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('CAMERA_NOT_SUPPORTED');
+        }
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -42,7 +45,7 @@ const LoadingScreen = ({ onFinished }) => {
           setBiometricStatus('SCANNING');
         }
       } catch (err) {
-        console.error("Webcam access denied", err);
+        console.error("Webcam initialization failed:", err);
         setBiometricStatus('BYPASS_ACTIVE'); // Fallback if no camera
       }
     };
